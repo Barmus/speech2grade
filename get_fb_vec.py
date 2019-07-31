@@ -1,4 +1,5 @@
 from rtk.data.kaldi.ark import read as read_ark
+import json
 
 # Necessary to run command before running this script: source /home/dawna/ar527/tools/rtk/IMPORT
 # Note rtk file written in python2
@@ -21,7 +22,6 @@ def get_fb_vectors(INPUT_FILE):
 # Get the dictionary of speaker&utt id to filter bank vectors
 ark = get_fb_vectors(INPUT_FILE)
 
-# 
 
 # Create dictionary of keys as only speaker ids and the values as a list of utterances
 speaker_dict = {}
@@ -30,12 +30,13 @@ for key in ark:
 	speaker_id = key[:12]
 	utt_id = key[22:28]
 	
-	
+	utt = ark[key]
+	utt = utt.tolist()
 	if speaker_id in speaker_dict:
-		speaker_dict[speaker_id][utt_id] = ark[key]
+		speaker_dict[speaker_id][utt_id] = utt
 	else:
 		speaker_dict[speaker_id] = {}
-		speaker_dict[speaker_id][utt_id] = ark[key]
+		speaker_dict[speaker_id][utt_id] = utt
 
 new_speaker_dict = {}
 for speaker in speaker_dict:
@@ -56,7 +57,11 @@ data_dict = {}
 for line in lines:
 	speaker_id = line[:12]
         grade = line[-3:]
-        data_dict[speaker_id] = [grade, new_speaker_dict[speaker_id]]
+	if speaker_id in new_speaker_dict:
+		data_dict[speaker_id] = [grade, new_speaker_dict[speaker_id]]
+
+print('About to write to file')
+
 
 
 # Write the data to a file
